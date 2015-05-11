@@ -1,0 +1,429 @@
+\chapter{系统设计}
+\section{数据流程图}
+\subsection{顶层图}
+\subsection{0层图}
+\subsubsection{用户信息管理}
+\paragraph{用户注册}
+\paragraph{用户修改}
+\paragraph{付费升级}
+\subsubsection{浏览导航}
+\paragraph{搜索书目}
+\paragraph{书籍操作}
+\paragraph{购物车操作}
+\subsubsection{订单系统}
+\paragraph{订单生成}
+\paragraph{订单填写}
+\paragraph{订单操作}
+\subsubsection{支付系统}
+\subsubsection{物流管理}
+\paragraph{库存统计}
+\paragraph{调货安排}
+\paragraph{订单整合}
+\paragraph{配送系统}
+\paragraph{实际调货}
+\section{数据字典}
+\subsection{数据流条目}
+
+\begin{itemize}
+	\item \textit{名称：}(查询)关键字
+	\item \textit{简述：}用户通过关键字搜索时在搜索框中输入的检索关键字
+	\item \textit{数据流组成：}(查询)关键字 = [字符|空格符]
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.1.1 关键字搜索
+	\item \textit{注解：}关键字之间以一个或多个空格分隔,一次可输入一个或多个关键字,但至少要输入一个关键字才能进行搜索
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}无效关键字
+	\item \textit{简述：}用户输入的关键字未能搜索到对应书目时的返回信息
+	\item \textit{数据流组成：}无效关键字 = (查询)关键字 + 搜索失败提示语
+	\item \textit{数据流来源：}加工 2.1.1 关键字搜索
+	\item \textit{数据流去向：}用户
+	\item \textit{注解：}对于搜索的书目不存在的以及输入格式不符合要求的,都返回这条消息
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}有效关键字
+	\item \textit{简述：}用户输入的关键字搜索到对应书目时系统内部的传递信息
+	\item \textit{数据流组成：}有效关键字 = (查询)关键字
+	\item \textit{数据流来源：}加工 2.1.1 关键字搜索
+	\item \textit{数据流去向：}加工 2.1.2 生成搜索结果
+	\item \textit{注解：}对于文件库存中存有的,但是目前库存数量为 0 的书目进行搜索,也返回这个结果
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}图书列表
+	\item \textit{简述：}根据用户输入的有效关键字进行搜索产生的书目列表
+	\item \textit{数据流组成：}图书列表元素 = 书名 + isbn + 作者 + 出版社 + 价格
+	\item \textit{数据流来源：}加工 2.1.2 生成搜索结果
+	\item \textit{数据流去向：}用户
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}多级导航
+	\item \textit{简述：}通过多级分类的形式,让用户能快速搜寻到自己感兴趣的类型的书目
+	\item \textit{数据流组成：}多级导航 = [一级主题类型|二级主题类型|三级主题类型]
+	\item \textit{数据流来源：}2.1.4 模块化搜索
+	\item \textit{数据流去向：}用户
+	\item \textit{注解：}一级主题类型可细分为多个二级主题类型,这些二级主题类型都包含于该一级主题类型。同理三级主题类型都包含于某二级主题中
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}选择书籍
+	\item \textit{简述：}用户通过点击操作,选择并进入某特定书籍的操作界面
+	\item \textit{数据流组成：}选择书籍 = [是|否]
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.1.5 书籍选择操作
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}加载选择书籍
+	\item \textit{简述：}用户点击选择了特定书籍后,系统从库存文件中读出的该图书的全部信息
+	\item \textit{数据流组成：}加载选择书籍 = 书名 + isbn + 作者 + 出版社 + 价格 + 存量
+	\item \textit{数据流来源：}加工 2.1.5 书籍选择操作
+	\item \textit{数据流去向：}加工 2.2.1 加载图书信息
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}库存不足
+	\item \textit{简述：}当用户选择的书籍没有库存时,提示用户进行预定
+	\item \textit{数据流组成：}库存不足 = 书名 + isbn + 库存不足提示 + 预定提示
+	\item \textit{数据流来源：}加工 2.2.1 加载图书信息
+	\item \textit{数据流去向：}用户
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}图书详细信息
+	\item \textit{简述：}将系统从库存文件中读出的图书信息显示给用户
+	\item \textit{数据流组成：}图书详细信息 = 加载选择书籍
+	\item \textit{数据流来源：}加工 2.2.1 加载图书信息
+	\item \textit{数据流去向：}用户
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}图书信息
+	\item \textit{简述：}系统内部传递与分配所需的图书的全部信息
+	\item \textit{数据流组成：}图书详细信息 = 加载选择书籍
+	\item \textit{数据流来源：}加工 2.2.1 加载图书信息
+	\item \textit{数据流去向：}加工 2.2.2 分配图书信息
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}预定书籍
+	\item \textit{简述：}用户选择特定书籍进行预定操作的信号
+	\item \textit{数据流组成：}预定书籍 = [是|否]
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.2.3 图书预定
+	\item \textit{注解：}只有当前库存为零的书籍才能进行预定操作
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}购物车图书信息
+	\item \textit{简述：}提供添加购物车所需的图书信息
+	\item \textit{数据流组成：}购物车图书信息  = 书名 + isbn + 价格
+	\item \textit{数据流来源：}加工 2.2.2 分配图书信息
+	\item \textit{数据流去向：}加工 2.2.4 购物车添加
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}加入购物车
+	\item \textit{简述：}用户选择特定书籍加入购物车的信号
+	\item \textit{数据流组成：}加入购物车 = [是|否]
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.2.4 购物车添加
+	\item \textit{注解：}加入购物车的图书数量都默认为 1。若要一次购买多本,可在加工 2.3 购物车操作中	进行数量编辑
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+\item \textit{名称：}预购图书信息
+\item \textit{简述：}提供购买操作所需的图书信息
+\item \textit{数据流组成：}预购图书信息  = 书名 + isbn + 价格
+\item \textit{数据流来源：}加工 2.2.2 分配图书信息
+\item \textit{数据流去向：}加工 2.2.5 购买数量编辑
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}购买数量
+	\item \textit{简述：}用户输入的选择图书的购买数量
+	\item \textit{数据流组成：}购买数量 = 非负整数值
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.2.5 购买数量编辑
+	\item \textit{注解：}用户输入的购买数量必须不小于 0,且不大于库存余量。如果用户输入的数值超出库存余量,则将其默认为库存余量。用户若想要购买更多,则需通过预定操作,并等待库存更新
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}图书购买信息
+	\item \textit{简述：}提供生成购物信息所需的图书信息,并加入了购买数量
+	\item \textit{数据流组成：}图书购买信息  = 预购图书信息 + 数量
+	\item \textit{数据流来源：}加工 2.2.5 购买数量编辑
+	\item \textit{数据流去向：}加工 2.2.6 图书购买
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}购买书籍
+	\item \textit{简述：}用户选择特定书籍进行购买的信号
+	\item \textit{数据流组成：}购买书籍 = [是|否]
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.2.6 图书购买
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}单笔购物信息
+	\item \textit{简述：}用户在某图书页面点击购买之后生成的购物信息
+	\item \textit{数据流组成：}单笔购物信息 = 书名 + isbn +价格 + 数量
+	\item \textit{数据流来源：}加工 2.2.6 图书购买
+	\item \textit{数据流去向：}加工 2.5 购书
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}查询当前购物车
+	\item \textit{简述：}用户对当前购物车内容进行查询的信号
+	\item \textit{数据流组成：}查询当前购物车 = [是|否]
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.3.1 购物车内容
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}显示当前购物车
+	\item \textit{简述：}对“查询当前购物车”的反馈,显示当前购物车内容
+	\item \textit{数据流组成：}显示当前购物车 = 书名 + isbn +价格 + 数量
+	\item \textit{数据流来源：}加工 2.3.1 购物车内容
+	\item \textit{数据流去向：}用户
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}选择购物车内容
+	\item \textit{简述：}用户选择特定的购物车内容以进行编辑的信号
+	\item \textit{数据流组成：}选择购物车内容 = [是|否]
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.3.2 购物车内容选择
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}加载选择购物车内容
+	\item \textit{简述：}根据用户的选择显示特定的购物车内容的详细信息,以便用户进行编辑
+	\item \textit{数据流组成：}加载选择购物车内容 = 书名 + isbn + 价格 + 数量
+	\item \textit{数据流来源：}加工 2.3.2 购物车内容选择
+	\item \textit{数据流去向：}加工 2.3.3 购物车编辑
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}购物车数量编辑
+	\item \textit{简述：}用户对选中的特定购物车内容进行更改数量的操作
+	\item \textit{数据流组成：}购物车数量编辑 = 大于 0 的整数
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.3.3 购物车编辑
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}购物车删除
+	\item \textit{简述：}用户删除选中的特定购物车内容的操作
+	\item \textit{数据流组成：}购物车删除 = [是|否]
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.3.3 购物车编辑
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}一键购买
+	\item \textit{简述：}用户通过购物车,对购物车内的图书进行一次性购买的操作信号
+	\item \textit{数据流组成：}一键购买 = [是|否]
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 2.3.4 购物车购买
+	\item \textit{注解：}该操作仅在购物车不为空时有效
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}多笔购物信息
+	\item \textit{简述：}用户通过购物车一键购买后生成的购物信息
+	\item \textit{数据流组成：}多笔购物信息 = 
+	\item \textit{数据流来源：}加工 2.3.4 购物车购买
+	\item \textit{数据流去向：}加工 2.5 购买
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}到货通知
+	\item \textit{简述：}用户预定的图书到货后,向用户发送的通知
+	\item \textit{数据流组成：}到货通知 = 书名 + 到货提示信息
+	\item \textit{数据流来源：}加工 2.4 预定管理
+	\item \textit{数据流去向：}用户
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}购物信息
+	\item \textit{简述：}整合后的所有购物信息,用以生成订单
+	\item \textit{数据流组成：}购物信息 =
+	\item \textit{数据流来源：}加工 2.5 购物信息
+	\item \textit{数据流去向：}加工 3 订单系统
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}购买信息
+	\item \textit{简述：}由浏览导航子系统发出的用户购买信息,用于生成订单
+	\item \textit{数据流组成：}购买信息=商品ID+商品名称+商品单价+购买数量+用户I
+	\item \textit{数据流来源：}浏览导航
+	\item \textit{数据流去向：}加工3.1 库存检查
+	\item \textit{注解：}购买信息由购物车生成,相当于用户提交的一个购物申请
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}库存错误反馈
+	\item \textit{简述：}对购买信息进行库存检查后,返回的错误反馈
+	\item \textit{数据流组成：}库存错误反馈=商品ID+商品名称+购买数量+用户ID
+	\item \textit{数据流来源：}加工3.1 库存检查
+	\item \textit{数据流去向：}浏览导航
+	\item \textit{注解：}由于很可能单次购买中的货品仍有库存,但不能满足此次购买的数量,因此反馈数据流中仍需要注明购买数量,而不仅仅是反馈没有库存的货品
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}合格购买信息
+	\item \textit{简述：}通过库存检查后,确认有货的购买信息
+	\item \textit{数据流组成：}合格信息=商品ID+商品名称+商品单价+购买数量+用户ID
+	\item \textit{数据流来源：}加工3.1 库存检查
+	\item \textit{数据流去向：}加工3.2.1 生成订单号
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}购买日期和时间
+	\item \textit{简述：}获取此次购买的日期和时间,用户生成唯一的订单号
+	\item \textit{数据流组成：}购买日期和时间=购买日期+购买时间
+	\item \textit{数据流来源：}服务器生成
+	\item \textit{数据流去向：}加工3.2.1 生成订单号
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}初始订单
+	\item \textit{简述：}对单个购买信息生成并分配的唯一订单号,保证后续操作
+	\item \textit{数据流组成：}初始订单=商品ID+商品名称+商品单价+购买数量+用户ID+订单号
+	\item \textit{数据流来源：}加工3.2.1 生成订单号
+	\item \textit{数据流去向：}加工3.2.2 预处理订单
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}订单信息
+	\item \textit{简述：}系统自动匹配用户后,向初始订单填写默认的付款方式和收货地址,形成完整的订单信息
+	\item \textit{数据流组成：}订单信息=商品ID+商品名称+商品单价+购买数量+用户ID+用户名+付款方式+收货地址
+	\item \textit{数据流来源：}加工3.2.2 预处理订单
+	\item \textit{数据流去向：}加工3.3.1 更新订单信息
+	\item \textit{注解：}初步填写一个完整的订单,方便用户操作,无需填写默认的支付方式和收货地址
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}支付方式
+	\item \textit{简述：}用户可以选择的支付方式
+	\item \textit{数据流组成：}支付方式=支付方式
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工3.3.1 更新订单信息
+	\item \textit{注解：}用户可以选择除默认支付方式外的其他支付方式
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}配送地址
+	\item \textit{简述：}用户填写的配送地址
+	\item \textit{数据流组成：}配送地址=收货地址+邮编
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工3.3.1 更新订单信息
+	\item \textit{注解：}用户可以选择重新填写的配送地址
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}订单信息(更新)
+	\item \textit{简述：}更新并确认支付方式和配送地址后的订单信息
+	\item \textit{数据流组成：}订单信息(更新)=商品ID+商品名称+商品单价+购买数量+用户ID+用户名+付款方式+收货地址
+	\item \textit{数据流来源：}加工3.3.1 更新订单信息
+	\item \textit{数据流去向：}加工3.3.2 计算运费
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}最终订单信息
+	\item \textit{简述：}更新并确认支付方式和配送地址后,由货物总价加上运费价格后的订单信息,并包含初始化的订单状态
+	\item \textit{数据流组成：}最终订单信息=商品ID+商品名称+商品单价+购买数量+用户ID+用户名+付款方式+收货地址+订单总价+订单状态
+	\item \textit{数据流来源：}加工3.3.3 写入交易信息
+	\item \textit{数据流去向：}用户
+\end{itemize}
+
+\vspace{-1mm}
+
+\begin{itemize}
+	\item \textit{名称：}查询订单申请
+	\item \textit{简述：}用户提交的查询订单申请
+	\item \textit{数据流组成：}查询订单号=用户ID+(查询订单号)
+	\item \textit{数据流来源：}用户
+	\item \textit{数据流去向：}加工 3.4.1 查找相关订单
+	\item \textit{注解：}因为要确认这个订单是否为此用户生成的,因此信息中需要附带用户 ID 用于检查；可以选择特定订单号,也可以不输入订单号,罗列所有用户订单
+\end{itemize}
+
+\vspace{-1mm}
